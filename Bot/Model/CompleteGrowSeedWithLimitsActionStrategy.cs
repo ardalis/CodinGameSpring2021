@@ -14,6 +14,8 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             _myTreeCounts[size] = treeCount;
         }
 
+        PrintCounts();
+
         Action act = null;
         act = CompleteATree(game);
         if (act != null) return act;
@@ -24,7 +26,16 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         act = SeedATree(game);
         if (act != null) return act;
 
-        return game.possibleActions.Last();
+        return game.possibleActions.First();
+    }
+
+    private void PrintCounts()
+    {
+        Console.Error.WriteLine("Tree Sizes:Counts");
+        foreach(int key in _myTreeCounts.Keys)
+        {
+            Console.Error.WriteLine($"{key} : {_myTreeCounts[key]}");
+        }
     }
 
     private Action CompleteATree(Game game)
