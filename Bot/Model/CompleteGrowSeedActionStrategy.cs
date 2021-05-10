@@ -1,5 +1,4 @@
-﻿using Bot.Model;
-using System.Linq;
+﻿using System.Linq;
 
 class CompleteGrowSeedActionStrategy : IStrategy
 {

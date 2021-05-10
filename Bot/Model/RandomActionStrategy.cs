@@ -1,5 +1,4 @@
-﻿using Bot.Model;
-using System;
+﻿using System;
 
 class RandomActionStrategy : IStrategy
 {

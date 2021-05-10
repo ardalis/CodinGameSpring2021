@@ -1,7 +1,4 @@
-﻿namespace Bot.Model
+﻿interface IStrategy
 {
-    interface IStrategy
-    {
-        Action SelectAction(Game game);
-    }
+    Action SelectAction(Game game);
 }
