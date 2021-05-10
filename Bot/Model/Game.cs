@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Bot.Model
 {
-    interface IStrategy
-    {
-        Action SelectAction(Game game);
-    }
-
     class Game
     {
         private readonly IStrategy _strategy;
@@ -27,12 +23,22 @@ namespace Bot.Model
 
             // set strategy here
             //_strategy = new LastActionStrategy();
-            _strategy = new RandomActionStrategy();
+            //_strategy = new RandomActionStrategy();
+            _strategy = new CompleteGrowSeedActionStrategy();
         }
 
         public Action GetNextAction()
         {
+            PrintPossibleActions();
             return _strategy.SelectAction(this);
+        }
+
+        private void PrintPossibleActions()
+        {
+            foreach (var action in possibleActions)
+            {
+                Console.Error.WriteLine(action);
+            }
         }
     }
 }
