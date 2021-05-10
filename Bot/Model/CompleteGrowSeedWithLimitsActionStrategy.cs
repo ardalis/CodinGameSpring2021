@@ -70,7 +70,7 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         {
             var tree = game.GetTreeFromLocation(a.targetCellIdx);
             var count = _myTreeCounts[tree.size + 1]; // shouldn't need to check out of bounds here
-            return count < 3;
+            return count < tree.size+1; // allow more of larger trees than smaller
         });
         return growTreesWithoutTooManyBiggerTrees;
     }
