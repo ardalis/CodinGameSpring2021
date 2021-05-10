@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bot.Model
 {
@@ -24,11 +25,13 @@ namespace Bot.Model
             // set strategy here
             //_strategy = new LastActionStrategy();
             //_strategy = new RandomActionStrategy();
-            _strategy = new CompleteGrowSeedActionStrategy();
+            //_strategy = new CompleteGrowSeedActionStrategy();
+            _strategy = new CompleteGrowSeedWithLimitsActionStrategy();
         }
 
         public Action GetNextAction()
         {
+            Console.Error.WriteLine($"Current Day: {day}");
             PrintPossibleActions();
             return _strategy.SelectAction(this);
         }
@@ -39,6 +42,11 @@ namespace Bot.Model
             {
                 Console.Error.WriteLine(action);
             }
+        }
+
+        public Tree GetTreeFromLocation(int cellIndex)
+        {
+            return trees.FirstOrDefault(t => t.cellIndex == cellIndex);
         }
     }
 }

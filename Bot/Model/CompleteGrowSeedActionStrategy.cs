@@ -24,3 +24,4 @@ class CompleteGrowSeedActionStrategy : IStrategy
         return game.possibleActions.Last();
     }
 }
+
