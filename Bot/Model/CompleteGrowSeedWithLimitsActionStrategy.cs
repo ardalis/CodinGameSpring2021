@@ -77,8 +77,8 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
     private Action SeedATree(Game game)
     {
-        // only plant seeds if we have fewer than 3
-        if (_myTreeCounts[0] >= 3) return null;
+        // only plant seeds if we have fewer than 2
+        if (_myTreeCounts[0] >= 2) return null;
 
         var seedActions = game.possibleActions
             .Where(a => a.type == Action.SEED)
@@ -86,5 +86,9 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
         return seedActions.FirstOrDefault();
     }
+
+    // Strategies to consider
+    // Don't seed next to my existing trees
+    // If it's Day 20+, don't seed - save the sun for grow/complete
 }
 
