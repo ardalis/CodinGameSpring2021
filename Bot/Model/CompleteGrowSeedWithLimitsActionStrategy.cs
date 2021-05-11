@@ -44,13 +44,15 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             .Where(a => a.type == Action.COMPLETE)
             .OrderBy(a => a.targetCellIdx);
 
-        if (game.day >= 21) return actions.FirstOrDefault();
+        if (game.day >= 22) return actions.FirstOrDefault();
 
         // if size 3 trees is at max size
         var completeActionForExcessTrees = actions.FirstOrDefault(a =>
         {
             var tree = game.GetTreeFromLocation(a.targetCellIdx);
             var count = _myTreeCounts[tree.size];
+            var max = GetMaxTreesOfSize(3);
+            if (game.day > 21) max = max - 1;
             return count == GetMaxTreesOfSize(3);
         });
         return completeActionForExcessTrees;
@@ -60,22 +62,23 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
     {
         if (game.day == 23) return null; // don't waste sun growing on last turn
         Func<Action, int> sort;
-        if (game.day < 10)
+
+        sort = a =>
         {
-            sort = a => a.targetCellIdx;
-        }
-        else
-        {
-            sort = a =>
-            {
-                var tree = game.GetTreeFromLocation(a.targetCellIdx);
-                return 5 - tree.size;
-            };
-        }
+            var tree = game.GetTreeFromLocation(a.targetCellIdx);
+            return a.targetCellIdx - tree.size;
+        };
 
         var actions = game.possibleActions
             .Where(a => a.type == Action.GROW)
-            .OrderBy(sort);
+            .OrderBy(sort)
+            .ToList();
+
+        // if low on nutrients only grow inner trees
+        if(game.nutrients < 5)
+        {
+            actions = actions.Where(a => a.targetCellIdx < 19).ToList();
+        }
 
         // if number of this kind of tree > 2
         var growTreesWithoutTooManyBiggerTrees = actions.FirstOrDefault(a =>
@@ -104,28 +107,42 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             .OrderByDescending(a => ScoreSeedLocation(a.sourceCellIdx, a.targetCellIdx, game))
             .ThenBy(a => a.targetCellIdx);
 
-        return seedActions.FirstOrDefault();
+        var chosenAction = seedActions.FirstOrDefault();
+        if(chosenAction != null)
+        {
+            int score = ScoreSeedLocation(chosenAction.sourceCellIdx, chosenAction.targetCellIdx, game);
+            Console.Error.WriteLine($"Seed Location Score: {score}");
+        }
+
+        return chosenAction;
     }
 
     private int ScoreSeedLocation(int sourceIndex, int targetIndex, Game game)
     {
-        // score 0 if adjacent to one of my trees
+        int score = 0;
         var myTrees = game.trees.Where(t => t.isMine);
+        var theirTrees = game.trees.Where(t => !t.isMine);
 
-        if (myTrees.Any(t => game.board[t.cellIndex].neighbours.Contains(targetIndex)))
-        {
-            return 0;
-        }
+        int myAdjacentTrees = myTrees.Count(t => game.board[t.cellIndex].neighbours.Contains(targetIndex));
+        int theirAdjacentTrees = theirTrees.Count(t => game.board[t.cellIndex].neighbours.Contains(targetIndex));
+
+        score -= myAdjacentTrees * 2;
+        score -= theirAdjacentTrees;
+
         if (game.board[sourceIndex].ShadeFreeLocations().Contains(targetIndex))
         {
-            return 2;
+            score += 3;
         }
-        return 1;
-        // TODO: range 2 locations not in-line with hexrows should score 2
+        if(game.nutrients < 10)
+        {
+            if (targetIndex < 7) score += 2;
+            if (targetIndex < 19) score += 1;
+        }
+        if (game.nutrients < 4 && targetIndex >= 19)
+        {
+            score = 0;
+        }
+        return score;
     }
-
-    // Strategies to consider
-    // Don't seed next to my existing trees
-    // If it's Day 20+, don't seed unless it's free - save the sun for grow/complete
 }
 
