@@ -45,9 +45,17 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             .OrderBy(a => a.targetCellIdx);
 
         // halfway through game, cut down big trees if we have enough size 2s
-        if (game.day >= 12 && _myTreeCounts[2] > 1)
+        if (game.day >= 12 && _myTreeCounts[2] > 2)
         {
-            return actions.FirstOrDefault();
+            // keep 2 big trees until late game
+            if (game.day < 20 && _myTreeCounts[3] > 1)
+            {
+                return actions.FirstOrDefault();
+            }
+            if(game.day >= 22)
+            {
+                return actions.FirstOrDefault();
+            }
         }
 
         // if size 3 trees is at max size
@@ -135,16 +143,16 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
         if(verbose)
         {
-            Console.Error.WriteLine($"Score with neighbors: {score}");
+            Console.Error.WriteLine($"Score:neighbors: {score}");
         }
 
         // favor toward the center
-        if (targetIndex < 7) score += 2;
-        if (targetIndex < 19) score += 1;
+        if (targetIndex < 7) score += 4;
+        if (targetIndex < 19) score += 2;
 
         if (verbose)
         {
-            Console.Error.WriteLine($"Score with location1: {score}");
+            Console.Error.WriteLine($"Score:location1: {score}");
         }
 
         if (game.board[sourceIndex].ShadeFreeLocations().Contains(targetIndex))
@@ -153,13 +161,13 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         }
         if(game.nutrients < 10)
         {
-            if (targetIndex < 7) score += 2;
-            if (targetIndex < 19) score += 1;
+            if (targetIndex < 7) score += 4;
+            if (targetIndex < 19) score += 2;
         }
 
         if (verbose)
         {
-            Console.Error.WriteLine($"Score with shade and location2: {score}");
+            Console.Error.WriteLine($"Score:location2: {score}");
         }
 
         // avoid throwing seeds from small trees
@@ -170,7 +178,7 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
         if (verbose)
         {
-            Console.Error.WriteLine($"Score with small trees rule: {score}");
+            Console.Error.WriteLine($"Score:smalltrees: {score}");
         }
 
         if (game.nutrients < 4 && targetIndex >= 19)
