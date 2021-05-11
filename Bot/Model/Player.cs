@@ -60,7 +60,9 @@ class Player
             }
 
             Action action = game.GetNextAction();
-            Console.WriteLine(action);
+
+            var message = "follow @ardalis";
+            Console.WriteLine(action + " " + message);
         }
     }
 }
