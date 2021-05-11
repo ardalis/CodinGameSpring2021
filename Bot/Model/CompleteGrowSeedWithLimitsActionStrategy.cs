@@ -44,7 +44,11 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             .Where(a => a.type == Action.COMPLETE)
             .OrderBy(a => a.targetCellIdx);
 
-        if (game.day >= 22) return actions.FirstOrDefault();
+        // halfway through game, cut down big trees if we have enough size 2s
+        if (game.day >= 12 && _myTreeCounts[2] > 1)
+        {
+            return actions.FirstOrDefault();
+        }
 
         // if size 3 trees is at max size
         var completeActionForExcessTrees = actions.FirstOrDefault(a =>
@@ -110,14 +114,14 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         var chosenAction = seedActions.FirstOrDefault();
         if(chosenAction != null)
         {
-            int score = ScoreSeedLocation(chosenAction.sourceCellIdx, chosenAction.targetCellIdx, game);
+            int score = ScoreSeedLocation(chosenAction.sourceCellIdx, chosenAction.targetCellIdx, game, verbose:true);
             Console.Error.WriteLine($"Seed Location Score: {score}");
         }
 
         return chosenAction;
     }
 
-    private int ScoreSeedLocation(int sourceIndex, int targetIndex, Game game)
+    private int ScoreSeedLocation(int sourceIndex, int targetIndex, Game game, bool verbose = false)
     {
         int score = 0;
         var myTrees = game.trees.Where(t => t.isMine);
@@ -129,6 +133,20 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         score -= myAdjacentTrees * 2;
         score -= theirAdjacentTrees;
 
+        if(verbose)
+        {
+            Console.Error.WriteLine($"Score with neighbors: {score}");
+        }
+
+        // favor toward the center
+        if (targetIndex < 7) score += 2;
+        if (targetIndex < 19) score += 1;
+
+        if (verbose)
+        {
+            Console.Error.WriteLine($"Score with location1: {score}");
+        }
+
         if (game.board[sourceIndex].ShadeFreeLocations().Contains(targetIndex))
         {
             score += 3;
@@ -138,10 +156,28 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             if (targetIndex < 7) score += 2;
             if (targetIndex < 19) score += 1;
         }
+
+        if (verbose)
+        {
+            Console.Error.WriteLine($"Score with shade and location2: {score}");
+        }
+
+        // avoid throwing seeds from small trees
+        if (myTrees.First(t => t.cellIndex == sourceIndex).size < 2)
+        {
+            score -= 1;
+        }
+
+        if (verbose)
+        {
+            Console.Error.WriteLine($"Score with small trees rule: {score}");
+        }
+
         if (game.nutrients < 4 && targetIndex >= 19)
         {
-            score = 0;
+            score = -100;
         }
+
         return score;
     }
 }

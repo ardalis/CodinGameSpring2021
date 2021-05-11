@@ -84,7 +84,7 @@
             case 32:
                 return new[] { 30, 5, 17 };
             case 33:
-                return new[] { 16, 6, 35 };
+                return new[] { 15, 6, 35 };
             case 34:
                 return new[] { 16, 18 };
             case 35:
