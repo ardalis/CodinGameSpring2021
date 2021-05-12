@@ -5,13 +5,16 @@ using System.Linq;
 class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 {
     Dictionary<int, int> _myTreeCounts = new Dictionary<int, int>();
+    Dictionary<int, int> _oppTreeCounts = new Dictionary<int, int>();
 
     public Action SelectAction(Game game)
     {
         for (int size = 0; size < 4; size++)
         {
-            var treeCount = game.trees.Count(t => t.isMine && t.size == size);
-            _myTreeCounts[size] = treeCount;
+            _myTreeCounts[size] = game.trees
+                .Count(t => t.isMine && t.size == size); ;
+            _oppTreeCounts[size] = game.trees
+                .Count(t => !t.isMine && t.size == size); ;
         }
 
         PrintCounts();
@@ -31,10 +34,10 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
     private void PrintCounts()
     {
-        Console.Error.WriteLine("Tree Sizes:Counts");
+        Console.Error.WriteLine("Tree Sizes:Me:Op");
         foreach (int key in _myTreeCounts.Keys)
         {
-            Console.Error.WriteLine($"{key} : {_myTreeCounts[key]}");
+            Console.Error.WriteLine($"{key.ToString(":10")} : {_myTreeCounts[key]}");
         }
     }
 
@@ -74,26 +77,26 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
     private Action GrowATree(Game game)
     {
         if (game.day == 23) return null; // don't waste sun growing on last turn
-        Func<Action, int> sort;
+        Func<Action, int> sort, sort2;
 
-        //sort = a =>
-        //{
-        //    var tree = game.GetTreeFromLocation(a.targetCellIdx);
-        //    return a.targetCellIdx - tree.size;
-        //};
-
-        // grow trees we have the fewest of (cheapest)
+        // grow trees we have the fewest of next size (cheapest)
         sort = a =>
         {
             var tree = game.GetTreeFromLocation(a.targetCellIdx);
             return _myTreeCounts[tree.size+1];
         };
 
-
+        // grow bigger trees before smaller trees (to make room)
+        sort2 = a =>
+        {
+            var tree = game.GetTreeFromLocation(a.targetCellIdx);
+            return 4-tree.size;
+        };
 
         var actions = game.possibleActions
             .Where(a => a.type == Action.GROW)
             .OrderBy(sort)
+            .ThenBy(sort2)
             .ThenBy(a => a.targetCellIdx)
             .ToList();
 
@@ -124,9 +127,8 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
     private Action SeedATree(Game game)
     {
-        // only plant seeds if we have fewer than 2
+        // only plant seeds if we have none
         if (_myTreeCounts[0] >= 1) return null;
-        if (game.day > 20 && _myTreeCounts[0] > 0) return null; // only plant if free
 
         var seedActions = game.possibleActions
             .Where(a => a.type == Action.SEED)
