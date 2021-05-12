@@ -1,4 +1,4 @@
 ﻿interface IStrategy
 {
-    Action SelectAction(Game game);
+    Action SelectAction(Game game = null);
 }

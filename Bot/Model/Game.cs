@@ -25,14 +25,15 @@ class Game
         //_strategy = new LastActionStrategy();
         //_strategy = new RandomActionStrategy();
         //_strategy = new CompleteGrowSeedActionStrategy();
-        _strategy = new CompleteGrowSeedWithLimitsActionStrategy();
+        //_strategy = new CompleteGrowSeedWithLimitsActionStrategy();
+        _strategy = new ConquerTheEdgeStrategy(this);
     }
 
     public Action GetNextAction()
     {
         Console.Error.WriteLine($"Current Day: {day}");
         PrintPossibleActions();
-        return _strategy.SelectAction(this);
+        return _strategy.SelectAction();
     }
 
     private void PrintPossibleActions()
