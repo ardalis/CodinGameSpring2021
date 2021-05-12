@@ -75,7 +75,7 @@ class ConquerTheEdgeStrategy : IStrategy
             var tree = _game.GetTreeFromLocation(a.targetCellIdx);
             var count = _myTreeCounts[3];
             var max = GetMaxTreesOfSize(3);
-            return count == max;
+            return count >= max;
         });
         return completeActionForExcessTrees;
     }
@@ -117,7 +117,7 @@ class ConquerTheEdgeStrategy : IStrategy
         {
             var tree = _game.GetTreeFromLocation(a.targetCellIdx);
             var count = _myTreeCounts[tree.size+1]; // shouldn't need to check out of bounds here
-            return count < GetMaxTreesOfSize(tree.size+1) + 2;
+            return count < GetMaxTreesOfSize(tree.size+1);
         });
         return growTreesWithoutTooManyBiggerTrees;
     }
