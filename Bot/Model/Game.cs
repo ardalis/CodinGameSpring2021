@@ -32,6 +32,7 @@ class Game
     public Action GetNextAction()
     {
         Console.Error.WriteLine($"Current Day: {day}");
+        Console.Error.WriteLine($"Nutrients : {nutrients}");
         PrintPossibleActions();
         return _strategy.SelectAction();
     }

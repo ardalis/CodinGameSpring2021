@@ -41,10 +41,10 @@ class ConquerTheEdgeStrategy : IStrategy
 
     private void PrintCounts()
     {
-        Console.Error.WriteLine("Tree Sizes:Me:Op");
+        Console.Error.WriteLine("Tree Sizes:Me:Op:Max");
         foreach (int key in _myTreeCounts.Keys)
         {
-            Console.Error.WriteLine($"{key} : {_myTreeCounts[key]}");
+            Console.Error.WriteLine($"{key} : {_myTreeCounts[key]} : {_oppTreeCounts[key]} : {GetMaxTreesOfSize(key)}");
         }
     }
 
@@ -126,8 +126,15 @@ class ConquerTheEdgeStrategy : IStrategy
     {
         if (treeSize == 1) return 2;
         if (treeSize == 2) return 2;
-        if (treeSize == 3) return 5;
 
+        if (treeSize == 3)
+        {
+            if(_game.nutrients <= 12)
+            {
+                return 2;
+            }
+            return 4;
+        }
         return 0;
     }
 
@@ -154,9 +161,12 @@ class ConquerTheEdgeStrategy : IStrategy
 
     private int ScoreSeedLocation(int sourceIndex, int targetIndex, bool verbose = false)
     {
+        // TODO: Prefer hex points especially 7,9,11,13,15,17
         int score = 0;
         var myTrees = _game.trees.Where(t => t.isMine);
         var theirTrees = _game.trees.Where(t => !t.isMine);
+        int[] hexPoints = { 7, 9, 11, 13, 15, 17 };
+        int[] mapCorners = { 19, 22, 25, 28, 31, 34 };
 
         int myAdjacentTrees = myTrees.Count(t => _game.board[t.cellIndex].neighbours.Contains(targetIndex));
         int theirAdjacentTrees = theirTrees.Count(t => _game.board[t.cellIndex].neighbours.Contains(targetIndex));
@@ -171,6 +181,8 @@ class ConquerTheEdgeStrategy : IStrategy
 
         // favor around the center
         if ((targetIndex > 6) && (targetIndex < 19)) score += 2;
+        if (hexPoints.Contains(targetIndex)) score += 1;
+        if (mapCorners.Contains(targetIndex)) score += 2;
 
         if (verbose)
         {
