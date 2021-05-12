@@ -49,6 +49,7 @@ class Player
                 bool isDormant = inputs[3] != "0"; // 1 if this tree is dormant
                 Tree tree = new Tree(cellIndex, size, isMine, isDormant);
                 game.trees.Add(tree);
+                //Console.Error.WriteLine(tree);
             }
 
             game.possibleActions.Clear();

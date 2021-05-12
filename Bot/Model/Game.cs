@@ -33,7 +33,7 @@ class Game
     {
         Console.Error.WriteLine($"Current Day: {day}");
         Console.Error.WriteLine($"Nutrients : {nutrients}");
-        PrintPossibleActions();
+        //PrintPossibleActions();
         return _strategy.SelectAction();
     }
 

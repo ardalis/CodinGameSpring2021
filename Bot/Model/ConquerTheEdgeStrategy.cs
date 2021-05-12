@@ -66,7 +66,7 @@ class ConquerTheEdgeStrategy : IStrategy
         {
             return actions.FirstOrDefault();
         }
-        
+
         // TODO: Prioritize completing tree that's going to be in shade tomorrow?
 
         // if size 3 trees is at max size
@@ -89,14 +89,14 @@ class ConquerTheEdgeStrategy : IStrategy
         sort = a =>
         {
             var tree = _game.GetTreeFromLocation(a.targetCellIdx);
-            return _myTreeCounts[tree.size+1];
+            return _myTreeCounts[tree.size + 1];
         };
 
         // grow bigger trees before smaller trees (to make room)
         sort2 = a =>
         {
             var tree = _game.GetTreeFromLocation(a.targetCellIdx);
-            return 4-tree.size;
+            return 4 - tree.size;
         };
 
         var actions = _game.possibleActions
@@ -107,7 +107,7 @@ class ConquerTheEdgeStrategy : IStrategy
             .ToList();
 
         // if low on nutrients only grow inner trees
-        if(_game.nutrients < 5)
+        if (_game.nutrients < 5)
         {
             actions = actions.Where(a => a.targetCellIdx < 19).ToList();
         }
@@ -116,8 +116,8 @@ class ConquerTheEdgeStrategy : IStrategy
         var growTreesWithoutTooManyBiggerTrees = actions.FirstOrDefault(a =>
         {
             var tree = _game.GetTreeFromLocation(a.targetCellIdx);
-            var count = _myTreeCounts[tree.size+1]; // shouldn't need to check out of bounds here
-            return count < GetMaxTreesOfSize(tree.size+1);
+            var count = _myTreeCounts[tree.size + 1]; // shouldn't need to check out of bounds here
+            return count < GetMaxTreesOfSize(tree.size + 1);
         });
         return growTreesWithoutTooManyBiggerTrees;
     }
@@ -125,13 +125,17 @@ class ConquerTheEdgeStrategy : IStrategy
     private int GetMaxTreesOfSize(int treeSize)
     {
         if (treeSize == 1) return 2;
-        if (treeSize == 2) return 2;
+        if (treeSize == 2) return 3;
 
         if (treeSize == 3)
         {
-            if(_game.nutrients <= 12)
+            if (_game.nutrients <= 6)
             {
                 return 2;
+            }
+            if (_game.nutrients <= 12)
+            {
+                return 3;
             }
             return 4;
         }
@@ -150,9 +154,9 @@ class ConquerTheEdgeStrategy : IStrategy
             .ThenBy(a => a.targetCellIdx);
 
         var chosenAction = seedActions.FirstOrDefault();
-        if(chosenAction != null)
+        if (chosenAction != null)
         {
-            int score = ScoreSeedLocation(chosenAction.sourceCellIdx, chosenAction.targetCellIdx, verbose:true);
+            int score = ScoreSeedLocation(chosenAction.sourceCellIdx, chosenAction.targetCellIdx, verbose: true);
             Console.Error.WriteLine($"Seed Location Score: {score}");
         }
 
@@ -166,23 +170,26 @@ class ConquerTheEdgeStrategy : IStrategy
         var myTrees = _game.trees.Where(t => t.isMine);
         var theirTrees = _game.trees.Where(t => !t.isMine);
         int[] hexPoints = { 7, 9, 11, 13, 15, 17 };
+        int[] hexLines = { 8, 10, 12, 14, 16, 18 };
         int[] mapCorners = { 19, 22, 25, 28, 31, 34 };
 
         int myAdjacentTrees = myTrees.Count(t => _game.board[t.cellIndex].neighbours.Contains(targetIndex));
         int theirAdjacentTrees = theirTrees.Count(t => _game.board[t.cellIndex].neighbours.Contains(targetIndex));
 
-        score -= myAdjacentTrees * 2;
+        score -= myAdjacentTrees * 4;
         score -= theirAdjacentTrees;
 
-        if(verbose)
+        if (verbose)
         {
             Console.Error.WriteLine($"Score:neighbors: {score}");
         }
 
         // favor around the center
-        if ((targetIndex > 6) && (targetIndex < 19)) score += 2;
-        if (hexPoints.Contains(targetIndex)) score += 1;
+        //if ((targetIndex > 6) && (targetIndex < 19)) score += 2;
+        //if (hexPoints.Contains(targetIndex)) score += 2;
+        if (hexLines.Contains(targetIndex)) score += 2;
         if (mapCorners.Contains(targetIndex)) score += 2;
+        score += _game.board[targetIndex].richness;
 
         if (verbose)
         {
@@ -191,7 +198,7 @@ class ConquerTheEdgeStrategy : IStrategy
 
         if (_game.board[sourceIndex].ShadeFreeLocations().Contains(targetIndex))
         {
-            score += 3;
+            score += 4;
         }
         //if(game.nutrients < 10)
         //{

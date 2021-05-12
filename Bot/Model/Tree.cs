@@ -12,4 +12,11 @@
         this.isMine = isMine;
         this.isDormant = isDormant;
     }
+
+    public override string ToString()
+    {
+        return "{ cell:" + cellIndex +
+            ", size:" + size +
+            ", isMine:" + isMine + "}";
+    }
 }
