@@ -56,6 +56,8 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         {
             return actions.FirstOrDefault();
         }
+        
+        // TODO: Prioritize completing tree that's going to be in shade tomorrow?
 
         // if size 3 trees is at max size
         var completeActionForExcessTrees = actions.FirstOrDefault(a =>
@@ -113,7 +115,7 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
     private int GetMaxTreesOfSize(int treeSize)
     {
-        if (treeSize == 1) return 1;
+        if (treeSize == 1) return 2;
         if (treeSize == 2) return 2;
         if (treeSize == 3) return 5;
 
