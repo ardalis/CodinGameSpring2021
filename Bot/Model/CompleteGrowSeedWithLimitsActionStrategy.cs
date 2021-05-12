@@ -44,19 +44,20 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
             .Where(a => a.type == Action.COMPLETE)
             .OrderBy(a => a.targetCellIdx);
 
-        // halfway through game, cut down big trees if we have enough size 2s
-        if (game.day >= 12 && _myTreeCounts[2] > 2)
+        if (game.day >= 22)
         {
-            // keep 2 big trees until late game
-            if (game.day < 20 && _myTreeCounts[3] > 1)
-            {
-                return actions.FirstOrDefault();
-            }
-            if(game.day >= 22)
-            {
-                return actions.FirstOrDefault();
-            }
+            // don't complete trees that give 0 points
+            return actions.FirstOrDefault(a => (game.nutrients + game.board[a.targetCellIdx].richness > 0));
         }
+
+        // complete *then* grow if we have enough sun
+        if (game.mySun >= 11 + _myTreeCounts[3] &&
+            _myTreeCounts[3] > 3)
+        {
+            return actions.FirstOrDefault();
+        }
+        
+        // TODO: Prioritize completing tree that's going to be in shade tomorrow?
 
         // if size 3 trees is at max size
         var completeActionForExcessTrees = actions.FirstOrDefault(a =>
@@ -75,15 +76,25 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
         if (game.day == 23) return null; // don't waste sun growing on last turn
         Func<Action, int> sort;
 
+        //sort = a =>
+        //{
+        //    var tree = game.GetTreeFromLocation(a.targetCellIdx);
+        //    return a.targetCellIdx - tree.size;
+        //};
+
+        // grow trees we have the fewest of (cheapest)
         sort = a =>
         {
             var tree = game.GetTreeFromLocation(a.targetCellIdx);
-            return a.targetCellIdx - tree.size;
+            return _myTreeCounts[tree.size+1];
         };
+
+
 
         var actions = game.possibleActions
             .Where(a => a.type == Action.GROW)
             .OrderBy(sort)
+            .ThenBy(a => a.targetCellIdx)
             .ToList();
 
         // if low on nutrients only grow inner trees
@@ -104,7 +115,11 @@ class CompleteGrowSeedWithLimitsActionStrategy : IStrategy
 
     private int GetMaxTreesOfSize(int treeSize)
     {
-        return treeSize + 2;
+        if (treeSize == 1) return 2;
+        if (treeSize == 2) return 2;
+        if (treeSize == 3) return 5;
+
+        return 0;
     }
 
     private Action SeedATree(Game game)

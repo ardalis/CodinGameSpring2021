@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class Game
+class Game 
 {
     private readonly IStrategy _strategy;
     public int day;
@@ -13,6 +13,7 @@ class Game
     public int mySun, opponentSun;
     public int myScore, opponentScore;
     public bool opponentIsWaiting;
+
 
     public Game()
     {
